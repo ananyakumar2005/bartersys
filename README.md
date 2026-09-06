@@ -2,6 +2,7 @@
 
 > **Trade what you have. Get what you need.**  
 > A cashless, student-to-student bartering platform built with a bold Bauhaus & Neo-brutalist aesthetic.
+> [Deployed on Render](https://bartersys.onrender.com/)
 
 ---
 
@@ -11,7 +12,7 @@
 2. [Project Structure](#2-project-structure)
 3. [Features](#3-features)
 4. [API Points Table](#4-api-points-table)
-5. [Preview (for Screenshots)](#5-preview-for-screenshots)
+5. [Preview](#5-preview-for-screenshots)
 6. [Workflow (Flow Chart)](#6-workflow-flow-chart)
 7. [Tech Stack](#7-tech-stack)
 8. [Local Deploy](#8-local-deploy)
@@ -134,9 +135,7 @@ ucs503p-202526odd-team-void/
 
 ---
 
-## 5. Preview (for Screenshots)
-
-> Place your application screenshot files in `static/images/screenshots/` to display live UI captures in this section.
+## 5. Preview 
 
 ### Marketplace & Item Discovery
 ![Marketplace Home](static/images/screenshots/marketplace.png)
