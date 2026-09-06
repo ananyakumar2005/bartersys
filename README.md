@@ -113,25 +113,16 @@ ucs503p-202526odd-team-void/
 
 ## 4. API Points Table
 
-| Blueprint | Method | URL / Endpoint | Auth Required | Description / Action |
-| :--- | :--- | :--- | :---: | :--- |
-| **`main`** | `GET` | `/` | ❌ No | Browse all available public listings sorted by newest first. |
-| **`auth`** | `GET`, `POST` | `/signup` | ❌ No | Register a new user account with name, email, and password. |
-| **`auth`** | `GET`, `POST` | `/login` | ❌ No | Authenticate user credentials and create login session. |
-| **`auth`** | `GET` | `/logout` | ✅ Yes | Invalidate user session and redirect to marketplace home. |
-| **`items`** | `GET`, `POST` | `/items/new` | ✅ Yes | Create a new listing and upload up to 5 compressed images. |
-| **`items`** | `GET` | `/items/<int:item_id>` | ❌ No | View full item specification, image gallery, and seller info. |
-| **`items`** | `GET`, `POST` | `/items/<int:item_id>/edit` | ✅ Yes (Owner) | Modify listing details and append additional photos. |
-| **`items`** | `POST` | `/items/<int:item_id>/delete` | ✅ Yes (Owner) | Delete listing and purge all associated storage objects. |
-| **`requests`** | `GET`, `POST` | `/requests/send/<int:item_id>` | ✅ Yes | Submit a barter offer offering an item and trade note. |
-| **`requests`** | `GET` | `/requests/incoming` | ✅ Yes | View all barter requests received for current user's items. |
-| **`requests`** | `GET` | `/requests/sent` | ✅ Yes | View all barter requests proposed by current user. |
-| **`requests`** | `POST` | `/requests/<int:req_id>/accept` | ✅ Yes (Owner) | Accept barter offer; marks involved items as `TRADED`. |
-| **`requests`** | `POST` | `/requests/<int:req_id>/reject` | ✅ Yes (Owner) | Decline barter offer and set status to `REJECTED`. |
-| **`wanted`** | `GET` | `/wanted/` | ❌ No | Browse all active, unfulfilled community wanted requests. |
-| **`wanted`** | `GET`, `POST` | `/wanted/new` | ✅ Yes | Publish a new "Wanted" post looking for specific items. |
-| **`wanted`** | `POST` | `/wanted/<int:post_id>/fulfill` | ✅ Yes (Owner) | Mark a wanted post as fulfilled. |
-| **`dashboard`**| `GET` | `/dashboard/` | ✅ Yes | View current user's listings, incoming/sent trades, and posts. |
+| Blueprint | Endpoints | Auth | Description |
+| :--- | :--- | :---: | :--- |
+| **`main`** | `GET /` | ❌ | Public marketplace catalog. |
+| **`auth`** | `/signup`, `/login`, `/logout` | Mixed | Registration, login, and session handling. |
+| **`items`** | `/items/new`, `/items/<id>`, `/items/<id>/edit`, `/items/<id>/delete` | Mixed | Full CRUD for listings, including image upload/cleanup. |
+| **`requests`** | `/requests/send/<id>`, `/incoming`, `/sent`, `/<id>/accept`, `/<id>/reject` | ✅ | Barter request lifecycle: propose, review, accept, or reject. |
+| **`wanted`** | `/wanted/`, `/wanted/new`, `/wanted/<id>/fulfill` | Mixed | Browse, post, and resolve Wanted Board requests. |
+| **`dashboard`** | `GET /dashboard/` | ✅ | Unified view of a user's items, requests, and posts. |
+
+*"Mixed" auth means some routes in that group are public (e.g. browsing/viewing) while create, edit, and owner-only actions require login.*
 
 ---
 
@@ -205,39 +196,45 @@ sequenceDiagram
 
 ---
 
-### Wanted Board & Fulfillment Flow
+### System Architecture
 
 ```mermaid
-flowchart TD
-    Start([Student Needs an Item]) --> Check{Is item available in marketplace?}
-    Check -- Yes --> SendBarter[Send Barter Request to Owner]
-    Check -- No --> PostWanted[Create Post on Wanted Board]
-    
-    PostWanted --> Broadcast[Post broadcasted to campus community]
-    Broadcast --> PeerResponse[Peer sees Wanted Post]
-    PeerResponse --> DirectContact[Peer lists item or connects with requester]
-    DirectContact --> MarkDone[Requester clicks 'Mark as Fulfilled']
-    MarkDone --> End([Post closed & archived])
+flowchart LR
+    Client[Browser<br/>Jinja2 Templates + JS]
+
+    subgraph Flask["Flask App (Application Factory)"]
+        direction TB
+        Blueprints["Blueprints<br/>auth · items · requests · wanted · dashboard · main"]
+        Forms["WTForms<br/>Validation & CSRF"]
+        Models["SQLAlchemy Models<br/>User · Item · BarterRequest · ItemRequest"]
+        Storage["storage.py<br/>Pillow compression pipeline"]
+    end
+
+    DB[(Supabase / SQLite<br/>PostgreSQL)]
+    Bucket[(Supabase Storage<br/>Image Bucket)]
+
+    Client -->|HTTP requests| Blueprints
+    Blueprints --> Forms
+    Blueprints --> Models
+    Blueprints --> Storage
+    Models -->|SQLAlchemy ORM| DB
+    Storage -->|Upload/Delete objects| Bucket
+    Bucket -->|Public CDN URLs| Client
 ```
+
+*Requests flow through Flask Blueprints, get validated by WTForms, and are persisted via SQLAlchemy to Postgres (or SQLite locally). Images are compressed by Pillow and pushed to Supabase Storage, which serves them back to the client over its CDN.*
 
 ---
 
 ## 7. Tech Stack
 
-| Category | Technology | Description |
-| :--- | :--- | :--- |
-| **Backend Framework** | **Flask 3.0+** | Python microframework utilizing application factories & blueprints |
-| **ORM / Database Layer** | **Flask-SQLAlchemy 3.1+** | Relational mapping, models, relationships, and queries |
-| **Authentication** | **Flask-Login 0.6+** | Session management, login protection, and current_user context |
-| **Forms & Security** | **Flask-WTF 1.2+ / WTForms** | Form definitions, CSRF protection, and field validators |
-| **Primary Database** | **Supabase PostgreSQL** | Cloud PostgreSQL with pooled connection string via Supavisor |
-| **Local DB Fallback** | **SQLite** | Zero-setup lightweight database for offline local development |
-| **Object Storage** | **Supabase Storage** | S3-compatible cloud bucket storing item listing pictures |
-| **Image Processing** | **Pillow 10.0+ (PIL)** | Image downscaling (1200px max) & progressive JPEG compression |
-| **Frontend Styling** | **Tailwind CSS & Vanilla CSS** | Neo-brutalist / Bauhaus design system with custom shadow utilities |
-| **Typography** | **Google Fonts (Outfit)** | Clean, geometric sans-serif modern typography |
-| **Template Engine** | **Jinja2** | Server-side template rendering with reusable macros |
-| **WSGI Server** | **Gunicorn 21.0+** | Production HTTP WSGI server for cloud deployment (Render) |
+| Layer | Technology |
+| :--- | :--- |
+| **Backend** | Flask 3.0+ (app factory & blueprints), Flask-Login, Flask-WTF/WTForms |
+| **Database** | Supabase PostgreSQL (prod) via Flask-SQLAlchemy, SQLite (local dev) |
+| **Media** | Pillow (resize/compress) + Supabase Storage (CDN-backed bucket) |
+| **Frontend** | Jinja2, Tailwind CSS & vanilla CSS (Neo-brutalist/Bauhaus), Google Fonts (Outfit) |
+| **Deployment** | Gunicorn on Render |
 
 ---
 
