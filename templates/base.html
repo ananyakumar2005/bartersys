@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}BarterSys{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Trade what you have. Get what you need. Student barter platform.{% endblock %}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { outfit: ['Outfit', 'sans-serif'] },
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}"/>
+</head>
+<body class="font-outfit bg-[#F0F0F0] text-[#121212] min-h-screen flex flex-col">
+
+  {# ── NAVIGATION ─────────────────────────────────────────────────────────── #}
+  <nav class="bg-[#F0F0F0] border-b-4 border-[#121212] sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 lg:px-8 flex items-center justify-between h-16">
+
+      {# Logo #}
+      <a href="{{ url_for('main.index') }}" class="flex items-center gap-3 group">
+        <div class="flex items-center gap-1.5">
+          <div class="w-4 h-4 rounded-full bg-[#D02020] border-2 border-[#121212] group-hover:scale-110 transition-transform"></div>
+          <div class="w-4 h-4 bg-[#1040C0] border-2 border-[#121212] group-hover:rotate-12 transition-transform"></div>
+          <div class="geo-tri-yellow"></div>
+        </div>
+        <span class="font-black text-xl uppercase tracking-tight">Barter<span class="text-[#D02020]">Sys</span></span>
+      </a>
+
+      {# Desktop links #}
+      <div class="hidden md:flex items-center gap-1">
+        <a href="{{ url_for('main.index') }}"
+           class="font-bold uppercase tracking-wider text-xs px-4 py-2 border-2 border-transparent hover:border-[#121212] hover:shadow-[3px_3px_0px_0px_#121212] transition-all duration-200">Browse</a>
+        <a href="{{ url_for('wanted.index') }}"
+           class="font-bold uppercase tracking-wider text-xs px-4 py-2 border-2 border-transparent hover:border-[#121212] hover:shadow-[3px_3px_0px_0px_#121212] transition-all duration-200">Wanted Board</a>
+
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('items.new') }}"
+             class="font-black uppercase tracking-wider text-xs px-4 py-2 bg-[#F0C020] border-2 border-[#121212] shadow-[3px_3px_0px_0px_#121212] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-200">+ List Item</a>
+          <a href="{{ url_for('requests.incoming') }}"
+             class="font-bold uppercase tracking-wider text-xs px-4 py-2 border-2 border-transparent hover:border-[#121212] hover:shadow-[3px_3px_0px_0px_#121212] transition-all duration-200">Requests</a>
+          <a href="{{ url_for('dashboard.index') }}"
+             class="font-bold uppercase tracking-wider text-xs px-5 py-2 bg-white border-2 border-[#121212] shadow-[3px_3px_0px_0px_#121212] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-200">{{ current_user.name.split()[0] }}</a>
+          <a href="{{ url_for('auth.logout') }}"
+             class="font-bold uppercase tracking-wider text-xs px-4 py-2 border-2 border-transparent hover:border-[#D02020] hover:text-[#D02020] transition-all duration-200">Logout</a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}"
+             class="font-bold uppercase tracking-wider text-xs px-5 py-2 border-2 border-[#121212] shadow-[3px_3px_0px_0px_#121212] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-200">Login</a>
+          <a href="{{ url_for('auth.signup') }}"
+             class="font-black uppercase tracking-wider text-xs px-5 py-2 bg-[#D02020] text-white border-2 border-[#121212] shadow-[3px_3px_0px_0px_#121212] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-200">Sign Up</a>
+        {% endif %}
+      </div>
+
+      {# Mobile hamburger #}
+      <button id="mob-btn" class="md:hidden p-2 border-2 border-[#121212] shadow-[3px_3px_0px_0px_#121212] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all">
+        <div class="w-5 h-0.5 bg-[#121212] mb-1.5 transition-all" id="hb1"></div>
+        <div class="w-5 h-0.5 bg-[#121212] mb-1.5" id="hb2"></div>
+        <div class="w-5 h-0.5 bg-[#121212] transition-all" id="hb3"></div>
+      </button>
+    </div>
+
+    {# Mobile menu #}
+    <div id="mob-menu" class="hidden md:hidden border-t-4 border-[#121212] bg-[#F0F0F0]">
+      <div class="flex flex-col px-4 py-3 gap-1">
+        <a href="{{ url_for('main.index') }}" class="font-bold uppercase text-sm py-3 px-2 border-b-2 border-[#E0E0E0] hover:text-[#D02020]">Browse</a>
+        <a href="{{ url_for('wanted.index') }}" class="font-bold uppercase text-sm py-3 px-2 border-b-2 border-[#E0E0E0] hover:text-[#D02020]">Wanted Board</a>
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('items.new') }}" class="font-bold uppercase text-sm py-3 px-2 border-b-2 border-[#E0E0E0] text-[#1040C0]">+ List Item</a>
+          <a href="{{ url_for('requests.incoming') }}" class="font-bold uppercase text-sm py-3 px-2 border-b-2 border-[#E0E0E0] hover:text-[#D02020]">Requests</a>
+          <a href="{{ url_for('dashboard.index') }}" class="font-bold uppercase text-sm py-3 px-2 border-b-2 border-[#E0E0E0] hover:text-[#D02020]">Dashboard</a>
+          <a href="{{ url_for('auth.logout') }}" class="font-bold uppercase text-sm py-3 px-2 text-[#D02020]">Logout</a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="font-bold uppercase text-sm py-3 px-2 border-b-2 border-[#E0E0E0] hover:text-[#D02020]">Login</a>
+          <a href="{{ url_for('auth.signup') }}" class="font-bold uppercase text-sm py-3 px-2 text-[#D02020]">Sign Up</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  {# ── FLASH MESSAGES ─────────────────────────────────────────────────────── #}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="max-w-7xl mx-auto w-full px-4 lg:px-8 pt-4 space-y-2">
+        {% for category, message in messages %}
+          {% if category == 'success' %}
+            <div class="flex items-center gap-3 border-4 border-[#121212] bg-[#F0C020] shadow-[4px_4px_0px_0px_#121212] px-5 py-3">
+              <span class="font-black text-lg">✓</span>
+          {% elif category in ['danger', 'error'] %}
+            <div class="flex items-center gap-3 border-4 border-[#121212] bg-[#D02020] text-white shadow-[4px_4px_0px_0px_#121212] px-5 py-3">
+              <span class="font-black text-lg">✕</span>
+          {% elif category == 'warning' %}
+            <div class="flex items-center gap-3 border-4 border-[#121212] bg-[#F0C020] shadow-[4px_4px_0px_0px_#121212] px-5 py-3">
+              <span class="font-black text-lg">!</span>
+          {% else %}
+            <div class="flex items-center gap-3 border-4 border-[#121212] bg-white shadow-[4px_4px_0px_0px_#121212] px-5 py-3">
+              <span class="font-black text-lg">→</span>
+          {% endif %}
+              <span class="font-bold uppercase tracking-wide text-sm">{{ message }}</span>
+            </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {# ── MAIN CONTENT ───────────────────────────────────────────────────────── #}
+  <main class="flex-1">{% block content %}{% endblock %}</main>
+
+  {# ── FOOTER ─────────────────────────────────────────────────────────────── #}
+  <footer class="bg-[#121212] text-white border-t-4 border-[#121212] mt-16">
+    <div class="max-w-7xl mx-auto px-4 lg:px-8 py-10">
+      <div class="flex flex-col md:flex-row justify-between gap-8">
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <div class="flex gap-1.5">
+              <div class="w-3 h-3 rounded-full bg-[#D02020]"></div>
+              <div class="w-3 h-3 bg-[#1040C0]"></div>
+              <div class="geo-tri-yellow scale-75"></div>
+            </div>
+            <span class="font-black text-lg uppercase">Barter<span class="text-[#D02020]">Sys</span></span>
+          </div>
+          <p class="font-medium text-[#888] text-sm max-w-xs">Trade what you have. Get what you need. No cash, no hassle.</p>
+        </div>
+        <div class="flex gap-12">
+          <div>
+            <p class="font-black uppercase tracking-widest text-xs text-[#F0C020] mb-3">Explore</p>
+            <div class="flex flex-col gap-2 text-sm">
+              <a href="{{ url_for('main.index') }}" class="text-[#888] hover:text-white transition-colors">Browse Items</a>
+              <a href="{{ url_for('wanted.index') }}" class="text-[#888] hover:text-white transition-colors">Wanted Board</a>
+              {% if current_user.is_authenticated %}
+                <a href="{{ url_for('items.new') }}" class="text-[#888] hover:text-white transition-colors">List an Item</a>
+              {% else %}
+                <a href="{{ url_for('auth.signup') }}" class="text-[#888] hover:text-white transition-colors">Join BarterSys</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-[#333] mt-8 pt-6 flex justify-between items-center">
+        <p class="text-[#555] text-xs uppercase tracking-widest">© 2026 BarterSys</p>
+        <div class="flex gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-[#D02020]"></div>
+          <div class="w-2.5 h-2.5 bg-[#1040C0]"></div>
+          <div class="w-2.5 h-2.5 bg-[#F0C020]"></div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile nav toggle
+    const btn = document.getElementById('mob-btn');
+    const menu = document.getElementById('mob-menu');
+    btn.addEventListener('click', () => menu.classList.toggle('hidden'));
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

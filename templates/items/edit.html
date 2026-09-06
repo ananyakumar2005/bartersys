@@ -1,0 +1,62 @@
+{% from 'macros/form.html' import field %}
+{% extends 'base.html' %}
+{% block title %}Edit: {{ item.title }} | BarterSys{% endblock %}
+
+{% block content %}
+{# ── Header band (red = edit mode) ──────────────────────────────────── #}
+<div class="bg-[#D02020] border-b-4 border-[#121212]">
+  <div class="max-w-7xl mx-auto px-4 lg:px-8 py-10 flex items-end justify-between">
+    <div>
+      <p class="font-black uppercase tracking-[0.3em] text-xs text-white opacity-70 mb-1">Editing</p>
+      <h1 class="font-black uppercase text-4xl sm:text-5xl tracking-tighter leading-[0.9] text-white">
+        {{ item.title[:30] }}{% if item.title|length > 30 %}…{% endif %}
+      </h1>
+    </div>
+    <div class="hidden sm:flex gap-2 opacity-20">
+      <div class="w-10 h-10 rounded-full bg-white"></div>
+      <div class="w-10 h-10 bg-white rotate-45"></div>
+    </div>
+  </div>
+</div>
+
+{# ── Form ────────────────────────────────────────────────────────────── #}
+<div class="max-w-3xl mx-auto px-4 lg:px-8 py-12">
+  <form method="POST" enctype="multipart/form-data" novalidate>
+    {{ form.hidden_tag() }}
+
+    <div class="bg-white border-4 border-[#121212] shadow-[8px_8px_0px_0px_#121212] p-8 mb-6">
+      <h2 class="font-black uppercase text-xl tracking-tight border-b-4 border-[#121212] pb-4 mb-6">Item Details</h2>
+      {{ field(form.title) }}
+      {{ field(form.description) }}
+    </div>
+
+    <div class="bg-white border-4 border-[#121212] shadow-[8px_8px_0px_0px_#121212] p-8 mb-8">
+      <h2 class="font-black uppercase text-xl tracking-tight border-b-4 border-[#121212] pb-4 mb-6">Classification</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {{ field(form.category) }}
+        {{ field(form.condition) }}
+      </div>
+    </div>
+
+    <div class="flex gap-4 flex-wrap">
+      <button type="submit"
+              class="flex-1 font-black uppercase tracking-wider text-sm py-4 bg-[#1040C0] text-white border-2 border-[#121212] shadow-[6px_6px_0px_0px_#121212] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all duration-200">
+        Save Changes →
+      </button>
+      <a href="{{ url_for('items.detail', item_id=item.id) }}"
+         class="font-black uppercase tracking-wider text-sm px-6 py-4 bg-white border-2 border-[#121212] shadow-[6px_6px_0px_0px_#121212] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all duration-200">
+        Cancel
+      </a>
+      {# Delete — separate POST form #}
+      <form method="POST" action="{{ url_for('items.delete', item_id=item.id) }}"
+            onsubmit="return confirm('Delete this listing? This cannot be undone.')">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <button type="submit"
+                class="font-black uppercase tracking-wider text-sm px-6 py-4 bg-[#F0F0F0] border-2 border-[#D02020] text-[#D02020] shadow-[4px_4px_0px_0px_#D02020] hover:bg-[#D02020] hover:text-white transition-all duration-200">
+          Delete
+        </button>
+      </form>
+    </div>
+  </form>
+</div>
+{% endblock %}

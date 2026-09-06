@@ -1,0 +1,47 @@
+{% macro field(f, placeholder='') %}
+<div class="mb-5">
+  {% if f.type != 'BooleanField' %}
+    <label class="block font-bold uppercase tracking-widest text-xs mb-2 text-[#121212]">
+      {{ f.label.text }}{% if f.flags.required %} <span class="text-[#D02020]">*</span>{% endif %}
+    </label>
+  {% endif %}
+
+  {% if f.type == 'TextAreaField' %}
+    {{ f(class="w-full border-2 border-[#121212] bg-white px-4 py-3 font-outfit font-medium text-[#121212] shadow-[3px_3px_0px_0px_#121212] focus:shadow-[5px_5px_0px_0px_#121212] transition-shadow resize-none h-32", placeholder=placeholder) }}
+
+  {% elif f.type == 'SelectField' %}
+    {{ f(class="w-full border-2 border-[#121212] bg-white px-4 py-3 font-outfit font-medium text-[#121212] shadow-[3px_3px_0px_0px_#121212] focus:shadow-[5px_5px_0px_0px_#121212] transition-shadow bauhaus-select") }}
+
+  {% elif f.type == 'BooleanField' %}
+    <label class="flex items-center gap-3 cursor-pointer group">
+      {{ f(class="w-5 h-5 border-2 border-[#121212] accent-[#D02020] cursor-pointer") }}
+      <span class="font-bold uppercase tracking-wider text-sm group-hover:text-[#D02020] transition-colors">{{ f.label.text }}</span>
+    </label>
+
+  {% elif f.type == 'FileField' %}
+    {{ f(class="w-full border-2 border-[#121212] bg-white px-4 py-3 font-outfit font-medium text-[#121212] shadow-[3px_3px_0px_0px_#121212] file:mr-4 file:py-1 file:px-3 file:border-2 file:border-[#121212] file:bg-[#F0C020] file:font-bold file:uppercase file:text-xs file:cursor-pointer cursor-pointer", **{'multiple': 'multiple'} if f.flags.multiple else {}) }}
+
+  {% else %}
+    {{ f(class="w-full border-2 border-[#121212] bg-white px-4 py-3 font-outfit font-medium text-[#121212] shadow-[3px_3px_0px_0px_#121212] focus:shadow-[5px_5px_0px_0px_#121212] transition-shadow", placeholder=placeholder) }}
+  {% endif %}
+
+  {% for error in f.errors %}
+    <p class="text-[#D02020] font-bold text-xs mt-1.5 uppercase tracking-wide">⚠ {{ error }}</p>
+  {% endfor %}
+</div>
+{% endmacro %}
+
+
+{# Bauhaus button macro #}
+{% macro btn(text, variant='red', size='md', type='submit', extra_class='') %}
+{% set base = "font-black uppercase tracking-wider border-2 border-[#121212] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none cursor-pointer " %}
+{% set variants = {
+  'red':     'bg-[#D02020] text-white shadow-[4px_4px_0px_0px_#121212] hover:bg-[#B01A1A]',
+  'blue':    'bg-[#1040C0] text-white shadow-[4px_4px_0px_0px_#121212] hover:bg-[#0D35A0]',
+  'yellow':  'bg-[#F0C020] text-[#121212] shadow-[4px_4px_0px_0px_#121212] hover:bg-[#D4AB1C]',
+  'outline': 'bg-white text-[#121212] shadow-[4px_4px_0px_0px_#121212] hover:bg-[#E0E0E0]',
+  'ghost':   'bg-transparent text-[#121212] border-transparent hover:bg-[#E0E0E0]',
+} %}
+{% set sizes = { 'sm': 'px-4 py-2 text-xs', 'md': 'px-6 py-3 text-sm', 'lg': 'px-8 py-4 text-base' } %}
+<button type="{{ type }}" class="{{ base }} {{ variants[variant] }} {{ sizes[size] }} {{ extra_class }}">{{ text }}</button>
+{% endmacro %}

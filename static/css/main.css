@@ -1,0 +1,79 @@
+/* BarterSys — Bauhaus Custom CSS
+   Everything else is handled by Tailwind CDN utility classes.
+   Only put here what Tailwind cannot express inline.
+*/
+
+/* ── Geometric triangle shapes ─────────────────────────────────────────── */
+.geo-tri-yellow {
+  width: 0; height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-bottom: 16px solid #F0C020;
+}
+.geo-tri-red {
+  width: 0; height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-bottom: 16px solid #D02020;
+}
+.geo-tri-white {
+  width: 0; height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-bottom: 16px solid #F0F0F0;
+}
+.geo-tri-xl-blue {
+  width: 0; height: 0;
+  border-left: 60px solid transparent;
+  border-right: 60px solid transparent;
+  border-bottom: 104px solid #1040C0;
+}
+.geo-tri-xl-yellow {
+  width: 0; height: 0;
+  border-left: 60px solid transparent;
+  border-right: 60px solid transparent;
+  border-bottom: 104px solid #F0C020;
+}
+
+/* ── Dot-grid background pattern ────────────────────────────────────────── */
+.dot-grid {
+  background-image: radial-gradient(#12121220 1.5px, transparent 1.5px);
+  background-size: 22px 22px;
+}
+
+/* ── Custom scrollbar (Webkit) ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #F0F0F0; }
+::-webkit-scrollbar-thumb { background: #121212; }
+::-webkit-scrollbar-thumb:hover { background: #D02020; }
+
+/* ── Select arrow override (hide default, use Bauhaus style) ─────────────── */
+select.bauhaus-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23121212' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* ── No-outline on focused inputs (we use shadow instead) ───────────────── */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+}
+
+/* ── Clip-path triangle decoration ──────────────────────────────────────── */
+.clip-triangle {
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+/* ── Image placeholder geometric fill ───────────────────────────────────── */
+.img-placeholder {
+  background: repeating-linear-gradient(
+    45deg,
+    #E0E0E0,
+    #E0E0E0 10px,
+    #F0F0F0 10px,
+    #F0F0F0 20px
+  );
+}

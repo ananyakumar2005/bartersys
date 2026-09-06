@@ -1,0 +1,58 @@
+{% from 'macros/form.html' import field %}
+{% extends 'base.html' %}
+{% block title %}New Listing | BarterSys{% endblock %}
+
+{% block content %}
+{# ── Header band ─────────────────────────────────────────────────────── #}
+<div class="bg-[#F0C020] border-b-4 border-[#121212]">
+  <div class="max-w-7xl mx-auto px-4 lg:px-8 py-10 flex items-end justify-between">
+    <div>
+      <p class="font-black uppercase tracking-[0.3em] text-xs text-[#121212] opacity-60 mb-1">Create</p>
+      <h1 class="font-black uppercase text-5xl sm:text-6xl tracking-tighter leading-[0.9]">NEW<br/>LISTING</h1>
+    </div>
+    <div class="hidden sm:flex gap-2 opacity-30">
+      <div class="w-12 h-12 rounded-full bg-[#121212]"></div>
+      <div class="w-12 h-12 bg-[#121212]"></div>
+      <div class="w-12 h-12 bg-[#121212] rotate-45"></div>
+    </div>
+  </div>
+</div>
+
+{# ── Form ────────────────────────────────────────────────────────────── #}
+<div class="max-w-3xl mx-auto px-4 lg:px-8 py-12">
+  <form method="POST" enctype="multipart/form-data" novalidate>
+    {{ form.hidden_tag() }}
+
+    <div class="bg-white border-4 border-[#121212] shadow-[8px_8px_0px_0px_#121212] p-8 mb-6">
+      <h2 class="font-black uppercase text-xl tracking-tight border-b-4 border-[#121212] pb-4 mb-6">Item Details</h2>
+      {{ field(form.title, placeholder='e.g. Calculus Textbook, PS4 Controller…') }}
+      {{ field(form.description, placeholder='Describe the item — size, usage, any quirks…') }}
+    </div>
+
+    <div class="bg-white border-4 border-[#121212] shadow-[8px_8px_0px_0px_#121212] p-8 mb-6">
+      <h2 class="font-black uppercase text-xl tracking-tight border-b-4 border-[#121212] pb-4 mb-6">Classification</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {{ field(form.category) }}
+        {{ field(form.condition) }}
+      </div>
+    </div>
+
+    <div class="bg-white border-4 border-[#121212] shadow-[8px_8px_0px_0px_#121212] p-8 mb-8">
+      <h2 class="font-black uppercase text-xl tracking-tight border-b-4 border-[#121212] pb-4 mb-6">Photos</h2>
+      <p class="font-medium text-sm text-[#555] mb-4">Upload photos of your item (max 5 MB each). Image uploads will be wired to Supabase Storage.</p>
+      {{ field(form.images) }}
+    </div>
+
+    <div class="flex gap-4">
+      <button type="submit"
+              class="flex-1 font-black uppercase tracking-wider text-sm py-4 bg-[#D02020] text-white border-2 border-[#121212] shadow-[6px_6px_0px_0px_#121212] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all duration-200">
+        Publish Listing →
+      </button>
+      <a href="{{ url_for('main.index') }}"
+         class="font-black uppercase tracking-wider text-sm px-6 py-4 bg-white border-2 border-[#121212] shadow-[6px_6px_0px_0px_#121212] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all duration-200">
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

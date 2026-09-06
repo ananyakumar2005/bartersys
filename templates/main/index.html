@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% block title %}Browse Items | BarterSys{% endblock %}
+
+{% block content %}
+{# ── HERO ─────────────────────────────────────────────────────────────── #}
+<section class="border-b-4 border-[#121212]">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex flex-col lg:flex-row min-h-[420px]">
+
+      {# Left — headline #}
+      <div
+        class="flex-1 dot-grid px-8 py-16 lg:py-24 flex flex-col justify-center border-b-4 lg:border-b-0 lg:border-r-4 border-[#121212]">
+        <p class="font-black uppercase tracking-[0.3em] text-xs text-[#D02020] mb-4">Student Barter Platform</p>
+        <h1 class="font-black uppercase text-5xl sm:text-6xl lg:text-7xl leading-[0.92] tracking-tighter mb-6">
+          TRADE<br />WHAT<br />YOU<span class="text-[#D02020]">.</span><br />HAVE<span class="text-[#1040C0]">.</span>
+        </h1>
+        <p class="font-medium text-lg text-[#444] max-w-sm mb-8">
+          List your stuff. Browse others'. Barter item-for-item — no cash, no apps, no nonsense.
+        </p>
+        <div class="flex flex-wrap gap-3">
+          {% if not current_user.is_authenticated %}
+          <a href="{{ url_for('auth.signup') }}"
+            class="font-black uppercase tracking-wider text-sm px-8 py-4 bg-[#D02020] text-white border-2 border-[#121212] shadow-[6px_6px_0px_0px_#121212] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all duration-200">
+            Get Started
+          </a>
+          <a href="{{ url_for('auth.login') }}"
+            class="font-black uppercase tracking-wider text-sm px-8 py-4 bg-white border-2 border-[#121212] shadow-[6px_6px_0px_0px_#121212] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all duration-200">
+            Log In
+          </a>
+          {% else %}
+          <a href="{{ url_for('items.new') }}"
+            class="font-black uppercase tracking-wider text-sm px-8 py-4 bg-[#F0C020] border-2 border-[#121212] shadow-[6px_6px_0px_0px_#121212] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all duration-200">
+            + List an Item
+          </a>
+          {% endif %}
+          <a href="#listings"
+            class="font-bold uppercase tracking-wider text-sm px-8 py-4 border-2 border-[#121212] shadow-[6px_6px_0px_0px_#121212] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all duration-200">
+            Browse ↓
+          </a>
+        </div>
+      </div>
+
+      {# Right — Bauhaus geometric art panel #}
+      <div class="w-full lg:w-96 bg-[#1040C0] flex items-center justify-center py-16 lg:py-0 relative overflow-hidden">
+        {# Background shapes #}
+        <div class="absolute top-6 right-6 w-24 h-24 border-4 border-white opacity-20 rotate-12"></div>
+        <div class="absolute bottom-8 left-4 w-16 h-16 rounded-full border-4 border-[#F0C020] opacity-30"></div>
+        {# Central composition #}
+        <div class="relative flex flex-col items-center gap-4">
+          <div class="w-28 h-28 rounded-full bg-white border-4 border-[#121212] shadow-[6px_6px_0px_0px_#121212]"></div>
+          <div class="flex gap-3">
+            <div class="w-14 h-14 bg-[#D02020] border-4 border-[#121212] shadow-[4px_4px_0px_0px_#121212]"></div>
+            <div class="w-14 h-14 bg-[#F0C020] border-4 border-[#121212] shadow-[4px_4px_0px_0px_#121212] rotate-45">
+            </div>
+          </div>
+          <div class="w-20 h-20 bg-white border-4 border-[#121212] shadow-[6px_6px_0px_0px_#121212] clip-triangle">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ── STATS BAR ─────────────────────────────────────────────────────────── #}
+<section class="bg-[#F0C020] border-b-4 border-[#121212]">
+  <div class="max-w-7xl mx-auto px-4 lg:px-8">
+    <div class="grid grid-cols-2 md:grid-cols-4 divide-x-2 divide-[#121212]">
+      {% set stats = [
+      (items|length, 'Items Listed'),
+      (items|selectattr('status', 'equalto', 'available')|list|length, 'Available Now'),
+      ('∞', 'No Cash Needed'),
+      ('🎓', 'Student Only'),
+      ] %}
+      {% for val, label in stats %}
+      <div class="py-6 px-6 text-center">
+        <p class="font-black text-3xl sm:text-4xl text-[#121212]">{{ val }}</p>
+        <p class="font-bold uppercase tracking-widest text-xs text-[#121212] mt-1">{{ label }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ── LISTINGS GRID ─────────────────────────────────────────────────────── #}
+<section id="listings" class="max-w-7xl mx-auto px-4 lg:px-8 py-14">
+
+  <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 border-b-4 border-[#121212] pb-6">
+    <div>
+      <p class="font-black uppercase tracking-[0.3em] text-xs text-[#D02020] mb-1">Available Now</p>
+      <h2 class="font-black uppercase text-4xl sm:text-5xl tracking-tighter">Listings</h2>
+    </div>
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('items.new') }}"
+      class="font-black uppercase tracking-wider text-xs px-6 py-3 bg-[#D02020] text-white border-2 border-[#121212] shadow-[4px_4px_0px_0px_#121212] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-200 self-start sm:self-auto">
+      + Add Listing
+    </a>
+    {% endif %}
+  </div>
+
+  {% if items %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% set colors = ['#D02020', '#1040C0', '#F0C020'] %}
+    {% for item in items %}
+    {% set accent = colors[loop.index0 % 3] %}
+    <a href="{{ url_for('items.detail', item_id=item.id) }}"
+      class="group block bg-white border-4 border-[#121212] shadow-[8px_8px_0px_0px_#121212] hover:-translate-y-1 hover:shadow-[10px_10px_0px_0px_#121212] transition-all duration-200 relative overflow-hidden">
+
+      {# Geometric corner accent #}
+      <div class="absolute top-0 right-0 w-0 h-0"
+        style="border-top: 40px solid {{ accent }}; border-left: 40px solid transparent;"></div>
+
+      {# Image / placeholder #}
+      <div class="img-placeholder border-b-4 border-[#121212] h-44 flex items-center justify-center">
+        {% if item.images %}
+        <img src="{{ item.images[0].image_path }}" alt="{{ item.title }}" class="w-full h-full object-cover" />
+        {% else %}
+        <div class="flex gap-3 opacity-40">
+          <div class="w-8 h-8 rounded-full bg-[#121212]"></div>
+          <div class="w-8 h-8 bg-[#121212]"></div>
+          <div class="w-8 h-8 bg-[#121212] rotate-45"></div>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="p-5">
+        {# Category badge #}
+        {% if item.category %}
+        <span
+          class="inline-block font-black uppercase tracking-widest text-[10px] px-2 py-0.5 border-2 border-[#121212] mb-3"
+          style="background-color: {{ accent }}; color: {{ '#121212' if accent == '#F0C020' else 'white' }}">
+          {{ item.category }}
+        </span>
+        {% endif %}
+
+        <h3
+          class="font-black uppercase text-xl tracking-tight leading-tight mb-2 group-hover:text-[#D02020] transition-colors">
+          {{ item.title }}
+        </h3>
+
+        {% if item.description %}
+        <p class="font-medium text-sm text-[#555] mb-4 line-clamp-2">{{ item.description }}</p>
+        {% endif %}
+
+        <div class="flex items-center justify-between pt-3 border-t-2 border-[#E0E0E0]">
+          <div>
+            <p class="font-bold uppercase tracking-widest text-[10px] text-[#888]">Condition</p>
+            <p class="font-bold uppercase text-xs text-[#121212]">{{ item.condition or '—' }}</p>
+          </div>
+          <div class="text-right">
+            <p class="font-bold uppercase tracking-widest text-[10px] text-[#888]">By</p>
+            <p class="font-bold uppercase text-xs text-[#121212]">{{ item.owner.name.split()[0] }}</p>
+          </div>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  {# Empty state #}
+  <div class="border-4 border-[#121212] shadow-[8px_8px_0px_0px_#121212] bg-white p-16 text-center">
+    <div class="flex justify-center gap-4 mb-6 opacity-30">
+      <div class="w-10 h-10 rounded-full bg-[#D02020]"></div>
+      <div class="w-10 h-10 bg-[#1040C0]"></div>
+      <div class="w-10 h-10 bg-[#F0C020] rotate-45"></div>
+    </div>
+    <h3 class="font-black uppercase text-2xl tracking-tight mb-3">No Listings Yet</h3>
+    <p class="font-medium text-[#555] mb-6">Be the first to list something worth trading.</p>
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('items.new') }}"
+      class="inline-block font-black uppercase tracking-wider text-sm px-8 py-4 bg-[#D02020] text-white border-2 border-[#121212] shadow-[4px_4px_0px_0px_#121212] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
+      List Your First Item
+    </a>
+    {% else %}
+    <a href="{{ url_for('auth.signup') }}"
+      class="inline-block font-black uppercase tracking-wider text-sm px-8 py-4 bg-[#D02020] text-white border-2 border-[#121212] shadow-[4px_4px_0px_0px_#121212] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
+      Join & List Something
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

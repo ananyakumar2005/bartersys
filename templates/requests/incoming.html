@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Incoming Requests | BarterSys{% endblock %}
+
+{% block content %}
+{# ── Header band ─────────────────────────────────────────────────────── #}
+<div class="bg-[#1040C0] border-b-4 border-[#121212]">
+  <div class="max-w-7xl mx-auto px-4 lg:px-8 py-10">
+    <p class="font-black uppercase tracking-[0.3em] text-xs text-white opacity-60 mb-1">People want your stuff</p>
+    <h1 class="font-black uppercase text-5xl tracking-tighter text-white">INCOMING<br/>REQUESTS</h1>
+  </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 lg:px-8 py-10">
+
+  {# Sub-nav #}
+  <div class="flex gap-3 mb-8 border-b-4 border-[#121212] pb-4">
+    <span class="font-black uppercase tracking-wider text-xs px-4 py-2 bg-[#1040C0] text-white border-2 border-[#121212]">Incoming</span>
+    <a href="{{ url_for('requests.sent') }}"
+       class="font-bold uppercase tracking-wider text-xs px-4 py-2 border-2 border-[#121212] hover:shadow-[3px_3px_0px_0px_#121212] transition-all">Sent</a>
+  </div>
+
+  {% if requests %}
+    <div class="space-y-4">
+      {% for req in requests %}
+        {# Status color mapping #}
+        {% if req.status == 'pending' %}
+          {% set badge_cls = 'bg-[#F0C020] text-[#121212]' %}
+        {% elif req.status == 'accepted' %}
+          {% set badge_cls = 'bg-[#1040C0] text-white' %}
+        {% elif req.status == 'rejected' %}
+          {% set badge_cls = 'bg-[#D02020] text-white' %}
+        {% else %}
+          {% set badge_cls = 'bg-[#E0E0E0] text-[#121212]' %}
+        {% endif %}
+
+        <div class="bg-white border-4 border-[#121212] shadow-[6px_6px_0px_0px_#121212] p-6">
+          <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+
+            <div class="flex-1">
+              <div class="flex flex-wrap items-center gap-2 mb-3">
+                <span class="font-black uppercase tracking-widest text-[10px] px-2 py-0.5 border-2 border-[#121212] {{ badge_cls }}">
+                  {{ req.status }}
+                </span>
+                <span class="font-medium text-xs text-[#888]">{{ req.created_at.strftime('%b %d, %Y at %H:%M') }}</span>
+              </div>
+
+              <p class="font-bold uppercase text-xs text-[#888] tracking-widest mb-0.5">Your Item</p>
+              <p class="font-black text-lg uppercase tracking-tight mb-2">
+                <a href="{{ url_for('items.detail', item_id=req.item.id) }}" class="hover:text-[#D02020] transition-colors">
+                  {{ req.item.title }}
+                </a>
+              </p>
+
+              <p class="font-bold uppercase text-xs text-[#888] tracking-widest mb-0.5">Requested by</p>
+              <p class="font-bold text-sm">{{ req.requester.name }}</p>
+
+              {% if req.offered_item %}
+                <div class="mt-3 border-l-4 border-[#F0C020] pl-3">
+                  <p class="font-bold uppercase text-[10px] text-[#888] tracking-widest mb-0.5">Offering in exchange</p>
+                  <p class="font-bold text-sm">{{ req.offered_item.title }}</p>
+                </div>
+              {% endif %}
+
+              {% if req.message %}
+                <div class="mt-3 bg-[#F0F0F0] border-2 border-[#E0E0E0] px-4 py-3">
+                  <p class="font-bold uppercase text-[10px] text-[#888] tracking-widest mb-1">Message</p>
+                  <p class="font-medium text-sm text-[#333]">{{ req.message }}</p>
+                </div>
+              {% endif %}
+            </div>
+
+            {# Accept / Reject buttons — only for pending #}
+            {% if req.status == 'pending' %}
+              <div class="flex sm:flex-col gap-3 flex-shrink-0">
+                <form method="POST" action="{{ url_for('requests.accept', req_id=req.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button type="submit"
+                          class="w-full sm:w-28 font-black uppercase tracking-wider text-xs px-4 py-3 bg-[#F0C020] border-2 border-[#121212] shadow-[4px_4px_0px_0px_#121212] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
+                    Accept ✓
+                  </button>
+                </form>
+                <form method="POST" action="{{ url_for('requests.reject', req_id=req.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button type="submit"
+                          class="w-full sm:w-28 font-black uppercase tracking-wider text-xs px-4 py-3 bg-white border-2 border-[#D02020] text-[#D02020] shadow-[4px_4px_0px_0px_#D02020] hover:bg-[#D02020] hover:text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
+                    Reject ✕
+                  </button>
+                </form>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div class="border-4 border-[#121212] shadow-[8px_8px_0px_0px_#121212] bg-white p-16 text-center">
+      <div class="flex justify-center gap-4 mb-6 opacity-20">
+        <div class="w-10 h-10 rounded-full bg-[#1040C0]"></div>
+        <div class="w-10 h-10 bg-[#D02020]"></div>
+      </div>
+      <h3 class="font-black uppercase text-2xl tracking-tight mb-3">No Requests Yet</h3>
+      <p class="font-medium text-[#555] mb-6">When someone wants to barter for your item, it'll appear here.</p>
+      <a href="{{ url_for('items.new') }}"
+         class="inline-block font-black uppercase tracking-wider text-sm px-6 py-4 bg-[#F0C020] border-2 border-[#121212] shadow-[4px_4px_0px_0px_#121212] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
+        List an Item
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

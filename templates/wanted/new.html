@@ -1,0 +1,42 @@
+{% from 'macros/form.html' import field %}
+{% extends 'base.html' %}
+{% block title %}Post a Want | BarterSys{% endblock %}
+
+{% block content %}
+<div class="bg-[#1040C0] border-b-4 border-[#121212]">
+  <div class="max-w-7xl mx-auto px-4 lg:px-8 py-10 flex items-end justify-between">
+    <div>
+      <p class="font-black uppercase tracking-[0.3em] text-xs text-white opacity-60 mb-1">Wanted Board</p>
+      <h1 class="font-black uppercase text-5xl tracking-tighter text-white leading-[0.9]">WHAT DO<br/>YOU NEED?</h1>
+    </div>
+    <div class="hidden sm:flex gap-2 opacity-20">
+      <div class="w-12 h-12 rounded-full bg-white"></div>
+      <div class="w-12 h-12 bg-[#F0C020] rotate-45"></div>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-2xl mx-auto px-4 lg:px-8 py-12">
+  <form method="POST" novalidate>
+    {{ form.hidden_tag() }}
+
+    <div class="bg-white border-4 border-[#121212] shadow-[8px_8px_0px_0px_#121212] p-8 mb-6">
+      <h2 class="font-black uppercase text-xl tracking-tight border-b-4 border-[#121212] pb-4 mb-6">Your Request</h2>
+      {{ field(form.title, placeholder="e.g. Looking for a scientific calculator") }}
+      {{ field(form.description, placeholder="Describe exactly what you need, condition preference, any other details…") }}
+      {{ field(form.category) }}
+    </div>
+
+    <div class="flex gap-4">
+      <button type="submit"
+              class="flex-1 font-black uppercase tracking-wider text-sm py-4 bg-[#D02020] text-white border-2 border-[#121212] shadow-[6px_6px_0px_0px_#121212] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all duration-200">
+        Post Want →
+      </button>
+      <a href="{{ url_for('wanted.index') }}"
+         class="font-black uppercase tracking-wider text-sm px-6 py-4 bg-white border-2 border-[#121212] shadow-[6px_6px_0px_0px_#121212] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all duration-200">
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

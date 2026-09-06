@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}{{ item.title }} | BarterSys{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 lg:px-8 py-10">
+
+  {# Breadcrumb #}
+  <div class="flex items-center gap-2 font-bold uppercase tracking-widest text-xs text-[#888] mb-8">
+    <a href="{{ url_for('main.index') }}" class="hover:text-[#D02020] transition-colors">Browse</a>
+    <span>→</span>
+    <span class="text-[#121212]">{{ item.title[:40] }}{% if item.title|length > 40 %}…{% endif %}</span>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+    {# ── Image Panel ──────────────────────────────────────────────────── #}
+    <div>
+      {% if item.images %}
+        <div class="border-4 border-[#121212] shadow-[8px_8px_0px_0px_#121212] overflow-hidden">
+          <img src="{{ item.images[0].image_path }}" alt="{{ item.title }}"
+               class="w-full h-80 object-cover"/>
+        </div>
+        {% if item.images|length > 1 %}
+          <div class="grid grid-cols-4 gap-3 mt-3">
+            {% for img in item.images[1:] %}
+              <div class="border-2 border-[#121212] overflow-hidden">
+                <img src="{{ img.image_path }}" alt="" class="w-full h-20 object-cover"/>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% else %}
+        {# Geometric placeholder #}
+        <div class="border-4 border-[#121212] shadow-[8px_8px_0px_0px_#121212] img-placeholder h-80 flex items-center justify-center">
+          <div class="text-center opacity-40">
+            <div class="flex justify-center gap-4 mb-4">
+              <div class="w-12 h-12 rounded-full bg-[#121212]"></div>
+              <div class="w-12 h-12 bg-[#121212]"></div>
+              <div class="w-12 h-12 bg-[#121212] rotate-45"></div>
+            </div>
+            <p class="font-bold uppercase tracking-widest text-xs">No Photos</p>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    {# ── Info Panel ───────────────────────────────────────────────────── #}
+    <div>
+      {# Status badge #}
+      {% if item.status == 'available' %}
+        <span class="inline-block font-black uppercase tracking-widest text-xs px-3 py-1 bg-[#F0C020] border-2 border-[#121212] shadow-[3px_3px_0px_0px_#121212] mb-4">Available</span>
+      {% elif item.status == 'pending' %}
+        <span class="inline-block font-black uppercase tracking-widest text-xs px-3 py-1 bg-[#1040C0] text-white border-2 border-[#121212] shadow-[3px_3px_0px_0px_#121212] mb-4">Pending</span>
+      {% else %}
+        <span class="inline-block font-black uppercase tracking-widest text-xs px-3 py-1 bg-[#E0E0E0] border-2 border-[#121212] shadow-[3px_3px_0px_0px_#121212] mb-4">Traded</span>
+      {% endif %}
+
+      <h1 class="font-black uppercase text-4xl sm:text-5xl tracking-tighter leading-tight mb-4">{{ item.title }}</h1>
+
+      {# Meta grid #}
+      <div class="grid grid-cols-2 border-4 border-[#121212] shadow-[6px_6px_0px_0px_#121212] mb-6">
+        {% for label, val in [('Category', item.category or '—'), ('Condition', item.condition or '—'), ('Listed by', item.owner.name), ('Listed on', item.created_at.strftime('%b %d, %Y'))] %}
+          <div class="p-4 {% if not loop.last %}border-b-2{% endif %} {% if loop.index is odd %}border-r-2{% endif %} border-[#121212]">
+            <p class="font-black uppercase tracking-widest text-[10px] text-[#888] mb-0.5">{{ label }}</p>
+            <p class="font-bold text-sm text-[#121212]">{{ val }}</p>
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if item.description %}
+        <div class="border-4 border-[#121212] shadow-[4px_4px_0px_0px_#121212] p-5 mb-6 bg-white">
+          <p class="font-black uppercase tracking-widest text-[10px] text-[#888] mb-2">Description</p>
+          <p class="font-medium text-[#333] leading-relaxed">{{ item.description }}</p>
+        </div>
+      {% endif %}
+
+      {# Action buttons #}
+      {% if current_user.is_authenticated %}
+        {% if item.owner_id == current_user.id %}
+          <div class="flex gap-3 flex-wrap">
+            <a href="{{ url_for('items.edit', item_id=item.id) }}"
+               class="font-black uppercase tracking-wider text-sm px-6 py-4 bg-[#1040C0] text-white border-2 border-[#121212] shadow-[4px_4px_0px_0px_#121212] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-200">
+              Edit Listing
+            </a>
+            <a href="{{ url_for('dashboard.index') }}"
+               class="font-black uppercase tracking-wider text-sm px-6 py-4 bg-white border-2 border-[#121212] shadow-[4px_4px_0px_0px_#121212] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-200">
+              Dashboard
+            </a>
+          </div>
+        {% elif item.status == 'available' %}
+          <a href="{{ url_for('requests.send', item_id=item.id) }}"
+             class="block w-full text-center font-black uppercase tracking-wider text-sm py-5 bg-[#D02020] text-white border-2 border-[#121212] shadow-[6px_6px_0px_0px_#121212] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all duration-200">
+            Request Barter ⇌
+          </a>
+        {% else %}
+          <div class="border-4 border-[#121212] bg-[#E0E0E0] px-5 py-4 font-bold uppercase tracking-wider text-sm text-center">
+            This item is no longer available
+          </div>
+        {% endif %}
+      {% else %}
+        <a href="{{ url_for('auth.login') }}"
+           class="block w-full text-center font-black uppercase tracking-wider text-sm py-5 bg-[#D02020] text-white border-2 border-[#121212] shadow-[6px_6px_0px_0px_#121212] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all duration-200">
+          Log In to Request Barter
+        </a>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% from 'macros/form.html' import field %}
+{% extends 'base.html' %}
+{% block title %}Request Barter | BarterSys{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 lg:px-8 py-10">
+
+  {# Breadcrumb #}
+  <div class="flex items-center gap-2 font-bold uppercase tracking-widest text-xs text-[#888] mb-8">
+    <a href="{{ url_for('main.index') }}" class="hover:text-[#D02020]">Browse</a>
+    <span>→</span>
+    <a href="{{ url_for('items.detail', item_id=item.id) }}" class="hover:text-[#D02020]">{{ item.title[:30] }}…</a>
+    <span>→</span>
+    <span class="text-[#121212]">Request Barter</span>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+
+    {# ── Item summary card ────────────────────────────────────────────── #}
+    <div class="lg:col-span-2">
+      <div class="bg-[#1040C0] border-4 border-[#121212] shadow-[8px_8px_0px_0px_#121212] p-6 text-white sticky top-24">
+        <p class="font-black uppercase tracking-[0.3em] text-xs opacity-70 mb-3">You're requesting</p>
+
+        {# Mini image #}
+        {% if item.images %}
+          <div class="border-2 border-white mb-4 overflow-hidden">
+            <img src="{{ item.images[0].image_path }}" alt="{{ item.title }}" class="w-full h-36 object-cover"/>
+          </div>
+        {% else %}
+          <div class="border-2 border-white mb-4 img-placeholder h-36 flex items-center justify-center">
+            <div class="opacity-40 flex gap-2">
+              <div class="w-6 h-6 rounded-full bg-white"></div>
+              <div class="w-6 h-6 bg-white"></div>
+            </div>
+          </div>
+        {% endif %}
+
+        <h2 class="font-black uppercase text-xl tracking-tight leading-tight mb-3">{{ item.title }}</h2>
+        <div class="flex gap-4 text-xs">
+          <div>
+            <p class="font-bold uppercase tracking-widest opacity-60 text-[10px]">Condition</p>
+            <p class="font-bold">{{ item.condition or '—' }}</p>
+          </div>
+          <div>
+            <p class="font-bold uppercase tracking-widest opacity-60 text-[10px]">Owner</p>
+            <p class="font-bold">{{ item.owner.name.split()[0] }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Request form ─────────────────────────────────────────────────── #}
+    <div class="lg:col-span-3">
+      <div class="bg-white border-4 border-[#121212] shadow-[8px_8px_0px_0px_#121212] p-8">
+        <h1 class="font-black uppercase text-3xl tracking-tight border-b-4 border-[#121212] pb-4 mb-6">Your Offer</h1>
+
+        <form method="POST" novalidate>
+          {{ form.hidden_tag() }}
+
+          {{ field(form.offered_item_id) }}
+          {{ field(form.message, placeholder='Tell the owner why you want this item, or describe what else you can offer…') }}
+
+          <div class="border-4 border-[#F0C020] bg-[#FFFDE7] p-4 mb-6">
+            <p class="font-bold uppercase tracking-wide text-xs text-[#121212]">
+              ⚠ A barter request is a proposal — the owner can accept or reject it.
+              No items are exchanged until both sides agree.
+            </p>
+          </div>
+
+          <button type="submit"
+                  class="w-full font-black uppercase tracking-wider text-sm py-4 bg-[#D02020] text-white border-2 border-[#121212] shadow-[6px_6px_0px_0px_#121212] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all duration-200">
+            Send Barter Request ⇌
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
