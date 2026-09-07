@@ -9,13 +9,14 @@
 ## 📑 Table of Contents
 
 1. [Overview](#1-overview)
-2. [Project Structure](#2-project-structure)
+2. [System Architecture](#2-system-architecture)
 3. [Features](#3-features)
-4. [API Points Table](#4-api-points-table)
+4. [API Endpoints](#4-api-endpoints)
 5. [Preview](#5-preview-for-screenshots)
-6. [Workflow (Flow Chart)](#6-workflow-flow-chart)
+6. [Workflow](#6-workflow)
 7. [Tech Stack](#7-tech-stack)
-8. [Local Deploy](#8-local-deploy)
+8. [Project Structure](#8-project-structure)
+9. [Local Deploy](#9-local-deploy)
 
 ---
 
@@ -32,86 +33,57 @@
 
 ---
 
-## 2. Project Structure
+### 2. System Architecture
 
+```mermaid
+flowchart LR
+    Client[Browser<br/>Jinja2 Templates + JS]
+
+    subgraph Flask["Flask App (Application Factory)"]
+        direction TB
+        Blueprints["Blueprints<br/>auth · items · requests · wanted · dashboard · main"]
+        Forms["WTForms<br/>Validation & CSRF"]
+        Models["SQLAlchemy Models<br/>User · Item · BarterRequest · ItemRequest"]
+        Storage["storage.py<br/>Pillow compression pipeline"]
+    end
+
+    DB[(Supabase / SQLite<br/>PostgreSQL)]
+    Bucket[(Supabase Storage<br/>Image Bucket)]
+
+    Client -->|HTTP requests| Blueprints
+    Blueprints --> Forms
+    Blueprints --> Models
+    Blueprints --> Storage
+    Models -->|SQLAlchemy ORM| DB
+    Storage -->|Upload/Delete objects| Bucket
+    Bucket -->|Public CDN URLs| Client
 ```
-ucs503p-202526odd-team-void/
-│
-├── app/
-│   ├── __init__.py          # App factory, extension initializations, and blueprint registrations
-│   ├── config.py            # Development and Production configuration settings
-│   ├── forms.py             # Flask-WTF form definitions (Auth, Items, Requests, Wanted)
-│   ├── models.py            # SQLAlchemy models (User, Hostel, Item, ItemImage, BarterRequest, ItemRequest)
-│   ├── storage.py           # Supabase Storage helper & Pillow image compression pipeline
-│   │
-│   └── routes/              # Modular Flask Blueprint controllers
-│       ├── __init__.py
-│       ├── auth.py          # Signup, Login, Logout route handlers
-│       ├── dashboard.py     # Unified user dashboard (active items, incoming/sent requests)
-│       ├── items.py         # Item CRUD, image upload processing & storage cleanup
-│       ├── main.py          # Public marketplace catalog & index landing
-│       ├── requests.py      # Barter request lifecycle (send, review, accept, reject)
-│       └── wanted.py        # Wanted Board (post, browse, mark fulfilled)
-│
-├── static/
-│   ├── css/
-│   │   └── main.css         # Neo-brutalist utility classes, buttons, badge styling
-│   ├── js/                  # Clientside interactions and scripts
-│   └── images/              # Static icons, mock assets, and screenshots
-│
-├── templates/               # Jinja2 template hierarchy
-│   ├── base.html            # Core HTML shell with responsive Bauhaus navbar & footer
-│   ├── auth/                # Login & registration views
-│   ├── dashboard/           # User dashboard view
-│   ├── items/               # New, edit, and detail views for listings
-│   ├── macros/              # Reusable Jinja components & form macros
-│   ├── main/                # Marketplace browse view
-│   ├── requests/            # Sent, incoming, and trade proposal views
-│   └── wanted/              # Wanted board catalog and creation views
-│
-├── .env.example             # Template for required environment variables
-├── .gitignore               # Ignored files, virtual environments, and secrets
-├── requirements.txt         # Project Python dependencies
-└── run.py                   # Development entrypoint & CLI database management (`init-db`)
-```
+
+*Requests flow through Flask Blueprints, get validated by WTForms, and are persisted via SQLAlchemy to Postgres (or SQLite locally). Images are compressed by Pillow and pushed to Supabase Storage, which serves them back to the client over its CDN.*
 
 ---
-
 ## 3. Features
 
-### 🔐 User Authentication & Profiles
-- **Secure Password Hashing:** Powered by `werkzeug.security` with strong salt-generation.
-- **Persistent Sessions:** Remember-me functionality via `flask-login`.
-- **Form Validation & CSRF Protection:** Robust validation with WTForms and automated CSRF token checks.
+### 🔐 Authentication & Security
+- Secure signup/login with password hashing (`Werkzeug`), session persistence (`Flask-Login`), and CSRF validation (`WTForms`).
 
-### 📦 Item Listings & Cloud Media Management
-- **Detailed Listings:** Add title, comprehensive description, category, and condition (e.g., *Brand New*, *Like New*, *Fair*).
-- **Multi-Image Upload:** Upload up to 5 images per item with automated validation (`JPEG`, `PNG`, `WEBP`).
-- **On-the-Fly Image Optimization:** Pillow resizes images to a maximum of 1200px and compresses to quality JPEG buffers before cloud upload.
-- **Supabase Storage Integration:** Direct upload to Supabase Storage with public CDN URLs saved to PostgreSQL.
-- **Automatic Storage Cleanup:** Deleting a listing automatically purges associated binary objects from Supabase Storage.
+### 📦 Listings & Cloud Media
+- Multi-image uploads (up to 5) with automatic Pillow optimization (downscaled to 1200px, JPEG compressed).
+- Direct Supabase CDN storage integration with automatic asset cleanup upon listing deletion.
 
 ### 🔄 Barter Trade System
-- **Item-for-Item Proposals:** Users select an available item from their own inventory to propose in exchange.
-- **Direct Messaging:** Attach a custom negotiation note to explain the trade offer.
-- **Self-Trade Prevention:** Guard rails prevent users from requesting their own listings.
-- **Instant Status Transition:** Accepting an exchange automatically flags both offered and requested items as `TRADED`.
-- **Request Lifecycle Tracking:** Real-time incoming, sent, pending, accepted, and rejected state tracking.
+- Direct item-for-item proposals with negotiation notes and self-trade prevention.
+- Real-time trade lifecycle tracking (pending, accepted, rejected) with automatic `TRADED` status updates on acceptance.
 
 ### 📌 Wanted Board
-- **Looking-for Broadcasts:** Post items you actively need that are not yet listed on the marketplace.
-- **1-Click Fulfillment:** Mark wanted requests as fulfilled once another student helps out.
+- Campus bulletin to broadcast requests for unlisted items and mark them fulfilled in one click.
 
-### 📊 Unified Student Dashboard
-- Single-pane view of:
-  - Your active and traded items.
-  - Incoming barter requests requiring your review.
-  - Outgoing trade proposals waiting for approval.
-  - Active wanted board requests.
+### 📊 Unified Dashboard
+- Centralized management of active listings, incoming/sent barter requests, and wanted posts.
 
 ---
 
-## 4. API Points Table
+## 4. API Endpoints 
 
 | Blueprint | Endpoints | Auth | Description |
 | :--- | :--- | :---: | :--- |
@@ -158,7 +130,7 @@ ucs503p-202526odd-team-void/
 
 ---
 
-## 6. Workflow (Flow Chart)
+## 6. Workflow 
 
 ### Barter Exchange Lifecycle
 
@@ -196,36 +168,6 @@ sequenceDiagram
 
 ---
 
-### System Architecture
-
-```mermaid
-flowchart LR
-    Client[Browser<br/>Jinja2 Templates + JS]
-
-    subgraph Flask["Flask App (Application Factory)"]
-        direction TB
-        Blueprints["Blueprints<br/>auth · items · requests · wanted · dashboard · main"]
-        Forms["WTForms<br/>Validation & CSRF"]
-        Models["SQLAlchemy Models<br/>User · Item · BarterRequest · ItemRequest"]
-        Storage["storage.py<br/>Pillow compression pipeline"]
-    end
-
-    DB[(Supabase / SQLite<br/>PostgreSQL)]
-    Bucket[(Supabase Storage<br/>Image Bucket)]
-
-    Client -->|HTTP requests| Blueprints
-    Blueprints --> Forms
-    Blueprints --> Models
-    Blueprints --> Storage
-    Models -->|SQLAlchemy ORM| DB
-    Storage -->|Upload/Delete objects| Bucket
-    Bucket -->|Public CDN URLs| Client
-```
-
-*Requests flow through Flask Blueprints, get validated by WTForms, and are persisted via SQLAlchemy to Postgres (or SQLite locally). Images are compressed by Pillow and pushed to Supabase Storage, which serves them back to the client over its CDN.*
-
----
-
 ## 7. Tech Stack
 
 | Layer | Technology |
@@ -238,7 +180,50 @@ flowchart LR
 
 ---
 
-## 8. Local Deploy
+## 8. Project Structure
+
+```
+bartersys/
+│
+├── app/
+│   ├── __init__.py          # App factory, extension initializations, and blueprint registrations
+│   ├── config.py            # Development and Production configuration settings
+│   ├── forms.py             # Flask-WTF form definitions (Auth, Items, Requests, Wanted)
+│   ├── models.py            # SQLAlchemy models (User, Hostel, Item, ItemImage, BarterRequest, ItemRequest)
+│   ├── storage.py           # Supabase Storage helper & Pillow image compression pipeline
+│   │
+│   └── routes/              # Modular Flask Blueprint controllers
+│       ├── __init__.py
+│       ├── auth.py          # Signup, Login, Logout route handlers
+│       ├── dashboard.py     # Unified user dashboard (active items, incoming/sent requests)
+│       ├── items.py         # Item CRUD, image upload processing & storage cleanup
+│       ├── main.py          # Public marketplace catalog & index landing
+│       ├── requests.py      # Barter request lifecycle (send, review, accept, reject)
+│       └── wanted.py        # Wanted Board (post, browse, mark fulfilled)
+│
+├── static/
+│   ├── css/
+│   │   └── main.css         # Neo-brutalist utility classes, buttons, badge styling
+│   ├── js/                  # Clientside interactions and scripts
+│   └── images/              # Static icons, mock assets, and screenshots
+│
+├── templates/               # Jinja2 template hierarchy
+│   ├── base.html            # Core HTML shell with responsive Bauhaus navbar & footer
+│   ├── auth/                # Login & registration views
+│   ├── dashboard/           # User dashboard view
+│   ├── items/               # New, edit, and detail views for listings
+│   ├── macros/              # Reusable Jinja components & form macros
+│   ├── main/                # Marketplace browse view
+│   ├── requests/            # Sent, incoming, and trade proposal views
+│   └── wanted/              # Wanted board catalog and creation views
+│
+├── .env.example             # Template for required environment variables
+├── .gitignore               # Ignored files, virtual environments, and secrets
+├── requirements.txt         # Project Python dependencies
+└── run.py                   # Development entrypoint & CLI database management (`init-db`)
+```
+---
+## 9. Local Deploy
 
 Follow these steps to run the BarterSys platform locally on your machine.
 
